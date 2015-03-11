@@ -2,8 +2,10 @@
 # Scans IP against blocklists
 # Enter the IP address to test it
 
+# Uses input to define the address
 ADDRESS=$1
 
+# Checks for variables and gives a short help menu just in case
 while getopts ":h" opt; do
     case $opt in
         h)
@@ -21,6 +23,7 @@ while getopts ":h" opt; do
     esac
 done
 
+# List of RBLs
 LISTS="
 b.barracudacentral.org
 bb.barracudacentral.org
@@ -105,6 +108,7 @@ xbl.spamhaus.org
 zen.spamhaus.org
 zombie.dnsbl.sorbs.net
 "
+
 #Makes the address backwards to see for querying
 
 BACKADDRESS=$(echo $ADDRESS | sed -r 's/([0-9]{1,3}).([0-9]{1,3}).([0-9]{1,3}).([0-9]{1,3})/\4.\3.\2.\1/')
@@ -112,9 +116,11 @@ BACKADDRESS=$(echo $ADDRESS | sed -r 's/([0-9]{1,3}).([0-9]{1,3}).([0-9]{1,3}).(
 # Looks up PTR record
 REVERSE=$(dig -x $ADDRESS +short)
 
+# Prints some variables
 echo "IP Address is: " $ADDRESS
 echo "Reverse DNS (if any) is : " $REVERSE
 
+# Runs the check against the list of RBLs then prints a result if it is listed
 for LI in ${LISTS} ; do
      if [[ $(dig  +short ${BACKADDRESS}.${LI}.) =~ 127.0.0.[2-50] ]] ; then
         echo "This is listed in ${LI}"

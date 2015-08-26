@@ -2,8 +2,11 @@
 # Scans IP against blocklists
 # Enter the IP address to test it
 
-# Uses input to define the address
+# Uses input to define needed information
 ADDRESS=$1
+BACKADDRESS=$(echo $ADDRESS | sed -r 's/([0-9]{1,3}).([0-9]{1,3}).([0-9]{1,3}).([0-9]{1,3})/\4.\3.\2.\1/')
+REVERSE=$(dig -x $ADDRESS +short)
+
 
 # Checks for variables and gives a short help menu just in case
 while getopts ":h" opt; do
@@ -108,28 +111,24 @@ zen.spamhaus.org
 zombie.dnsbl.sorbs.net
 "
 
-# Makes the address backwards to see for querying
+# Basic Functions
 
-backaddress() { BACKADDRESS=$(echo $ADDRESS | sed -r 's/([0-9]{1,3}).([0-9]{1,3}).([0-9]{1,3}).([0-9]{1,3})/\4.\3.\2.\1/'); }
-
-# Looks up PTR record
-REVERSE=$(dig -x $ADDRESS +short)
-
-backaddress
-
-# Senderbase test
 if [[ $( dig txt $BACKADDRESS.query.senderbase.org | grep "25=0") ]] ; then
         REPUTATION="Neutral or Better"
 else
         REPUTATION="Poor"
 fi
 
-# Prints some variables
-echo "IP Address is: " $ADDRESS
-echo "Reverse DNS (if any) is : " $REVERSE
-echo "Senderbase Reptation is: " $REPUTATION
-
-echo "Running query now, this may take some time, if nothing comes up, you're not blacklisted."
+# Begin Output
+echo "+----------------------------------------------------------------------+"
+echo "      IP Address is: "  $ADDRESS
+echo "      Reverse DNS (if any) is: " $REVERSE
+echo "      Senderbase Reptation is: " $REPUTATION
+echo "+----------------------------------------------------------------------+"
+echo " "
+echo " "
+echo "Running query now, this may take some time..."
+echo "If nothing comes up, you're not listed on known blacklists."
 
 # Runs the check against the list of RBLs then prints a result if it is listed
 for LI in ${LISTS} ; do

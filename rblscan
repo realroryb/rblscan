@@ -37,26 +37,26 @@ elif [[ $SUBNETCIDR = 26 ]] ; then
         SUBNETSPAN="64"
 elif [[ $SUBNETCIDR = 31 ]] ; then
 	SUBNETSPAN="2"
-#elif [[ $SUBNETCIDR = 25 ]] ; then
-#        SUBNETSPAN="128"
-#elif [[ $SUBNETCIDR = 24 ]] ; then
-#        SUBNETSPAN="256"
-#elif [[ $SUBNETCIDR = 23 ]] ; then
-#        SUBNETSPAN="512"
-#elif [[ $SUBNETCIDR = 22 ]] ; then
-#        SUBNETSPAN="1024"
-#elif [[ $SUBNETCIDR = 21 ]] ; then
-#        SUBNETSPAN="2048"
-#elif [[ $SUBNETCIDR = 20 ]] ; then
-#        SUBNETSPAN="4096"
-#elif [[ $SUBNETCIDR = 19 ]] ; then
-#        SUBNETSPAN="8192"
-#elif [[ $SUBNETCIDR = 18 ]] ; then
-#        SUBNETSPAN="16384"
-#elif [[ $SUBNETCIDR = 17 ]] ; then
-#        SUBNETSPAN="32768"
-#elif [[ $SUBNETCIDR = 16 ]] ; then
-#        SUBNETSPAN="65536"
+elif [[ $SUBNETCIDR = 25 ]] ; then
+        SUBNETSPAN="128"
+elif [[ $SUBNETCIDR = 24 ]] ; then
+        SUBNETSPAN="256"
+elif [[ $SUBNETCIDR = 23 ]] ; then
+        SUBNETSPAN="512"
+elif [[ $SUBNETCIDR = 22 ]] ; then
+        SUBNETSPAN="1024"
+elif [[ $SUBNETCIDR = 21 ]] ; then
+        SUBNETSPAN="2048"
+elif [[ $SUBNETCIDR = 20 ]] ; then
+        SUBNETSPAN="4096"
+elif [[ $SUBNETCIDR = 19 ]] ; then
+        SUBNETSPAN="8192"
+elif [[ $SUBNETCIDR = 18 ]] ; then
+        SUBNETSPAN="16384"
+elif [[ $SUBNETCIDR = 17 ]] ; then
+        SUBNETSPAN="32768"
+elif [[ $SUBNETCIDR = 16 ]] ; then
+        SUBNETSPAN="65536"
 elif [[ -z $SUBNETCIDR ]] ; then
 	:
 else
@@ -221,7 +221,6 @@ function defaultout {
 	echo ""
 	echo "Running query now, this may take some time..."
 	echo "If nothing comes up, you're not listed on known blacklists."
-	echo ""
 }
 
 # Range Output
@@ -238,7 +237,6 @@ function rangeoutput {
 	echo "Running scan against this range, this may take some time..."
 	echo ""
 	echo "If nothing comes up, your range is not listed on known blocklists."
-	echo ""
 }
 
 # Help Menu with -h
@@ -253,9 +251,11 @@ while getopts ":h" SWITCH; do
 	        exit 1
 	        ;;
         \?)
-            echo "Invalid option: -$OPTARG" >&2
-            echo "Please use -h for help" >&2
-            exit 1
+		echo ""
+        	echo "Invalid option: -$OPTARG" >&2
+	        echo "Please use -h for help" >&2
+        	echo "Usage: rblscan [ip address] <subnet in CIDR>"
+		exit 1
 	    ;;
     esac
 done

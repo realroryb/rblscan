@@ -4,27 +4,65 @@
 
 # Uses input to define needed information
 ADDRESS=$1
+
+# Verifies address is correct format and length
+if [[ $ADDRESS =~ ([0-9]{1,3})\.([0-9]{1,3})\.([0-9]{1,3})\.([0-9]{1,3}) ]] ; then
+	:
+else
+	echo ""
+	echo "Please supply a valid address"
+        echo ""
+        echo "Usage: rblscan [ip address] <subnet in CIDR>" >&2
+        echo ""
+
+	exit 1
+fi
+
+# Creates needed variables
+
 BACKADDRESS=$(echo $ADDRESS | sed -r 's/([0-9]{1,3}).([0-9]{1,3}).([0-9]{1,3}).([0-9]{1,3})/\4.\3.\2.\1/')
 REVERSE=$(dig -x $ADDRESS +short)
+SUBNETCIDR=$2
 
-
-# Checks for variables and gives a short help menu just in case
-while getopts ":h" opt; do
-    case $opt in
-        h)
-            echo "IP Blocklist checker" >&2
-            echo ""
-            echo "Usage: rblscan [ip address]" >&2
-            echo ""
-            exit 1
-            ;;
-        \?)
-            echo "Invalid option: -$OPTARG" >&2
-            echo "Please use -h for help" >&2
-            exit 1
-            ;;
-    esac
-done
+# Subnet hosts based on CIDR
+if [[ $SUBNETCIDR = 30 ]] ; then
+	SUBNETSPAN="4"
+elif [[ $SUBNETCIDR = 29 ]] ; then
+	SUBNETSPAN="8"
+elif [[ $SUBNETCIDR = 28 ]] ; then
+	SUBNETSPAN="16"
+elif [[ $SUBNETCIDR = 27 ]] ; then
+        SUBNETSPAN="32"
+elif [[ $SUBNETCIDR = 26 ]] ; then
+        SUBNETSPAN="64"
+elif [[ $SUBNETCIDR = 31 ]] ; then
+	SUBNETSPAN="2"
+#elif [[ $SUBNETCIDR = 25 ]] ; then
+#        SUBNETSPAN="128"
+#elif [[ $SUBNETCIDR = 24 ]] ; then
+#        SUBNETSPAN="256"
+#elif [[ $SUBNETCIDR = 23 ]] ; then
+#        SUBNETSPAN="512"
+#elif [[ $SUBNETCIDR = 22 ]] ; then
+#        SUBNETSPAN="1024"
+#elif [[ $SUBNETCIDR = 21 ]] ; then
+#        SUBNETSPAN="2048"
+#elif [[ $SUBNETCIDR = 20 ]] ; then
+#        SUBNETSPAN="4096"
+#elif [[ $SUBNETCIDR = 19 ]] ; then
+#        SUBNETSPAN="8192"
+#elif [[ $SUBNETCIDR = 18 ]] ; then
+#        SUBNETSPAN="16384"
+#elif [[ $SUBNETCIDR = 17 ]] ; then
+#        SUBNETSPAN="32768"
+#elif [[ $SUBNETCIDR = 16 ]] ; then
+#        SUBNETSPAN="65536"
+elif [[ -z $SUBNETCIDR ]] ; then
+	:
+else
+	echo "Please supply a valid CIDR"
+	exit
+fi
 
 # List of RBLs
 LISTS="
@@ -111,28 +149,91 @@ zen.spamhaus.org
 zombie.dnsbl.sorbs.net
 "
 
-# Basic Functions
+## Basic Functions ##
+#  All of the basic functions are here.
 
-if [[ $( dig txt $BACKADDRESS.query.senderbase.org | grep "25=0") ]] ; then
-        REPUTATION="Neutral or Better"
-else
-        REPUTATION="Poor"
-fi
+# Checks if you're scanning a range or not
+function rangecheck {
+	if [[ -n "$SUBNETCIDR" ]] ; then
+	    rangebuild
+	    rangescan 
+	fi
+}
 
-# Begin Output
-echo "+----------------------------------------------------------------------+"
-echo "      IP Address is: "  $ADDRESS
-echo "      Reverse DNS (if any) is: " $REVERSE
-echo "      Senderbase Reptation is: " $REPUTATION
-echo "+----------------------------------------------------------------------+"
-echo " "
-echo " "
-echo "Running query now, this may take some time..."
-echo "If nothing comes up, you're not listed on known blacklists."
+# Builds range based on CIDR
+function rangebuild {
+	ADDRLOCTET=$(echo $ADDRESS | sed -r 's/([0-9]{1,3}).([0-9]{1,3}).([0-9]{1,3}).([0-9]{1,3})/\4/')
+	ADDRNET=$(echo $ADDRESS | sed -r 's/([0-9]{1,3}).([0-9]{1,3}).([0-9]{1,3}).([0-9]{1,3})/\1.\2.\3./')
+	RANGEEND=$(expr $ADDRLOCTET + $SUBNETSPAN)
+	RANGELOCTS=$(seq $ADDRLOCTET $RANGEEND)
+	RANGEARRAY=$(for i in $RANGELOCTS ; do echo $ADDRNET$i ; done)
+	BACKRANGEARRAY=$(for RANGEARRA in ${RANGEARRAY} ; do echo ${RANGEARRA} | sed -r 's/([0-9]{1,3}).([0-9]{1,3}).([0-9]{1,3}).([0-9]{1,3})/\4.\3.\2.\1/' ; done)
+}
+
+# Scans range
+function rangescan {
+	for BACKRANGEARRA in ${BACKRANGEARRAY} ; do
+		for LIST in ${LISTS} ; do
+        		if [[ $(dig  +short ${BACKRANGEARRA}.${LIST}.) =~ 127.0.0.[2-50] ]] ; then
+				echo $(echo $BACKRANGEARRA | sed -r 's/([0-9]{1,3}).([0-9]{1,3}).([0-9]{1,3}).([0-9]{1,3})/\4.\3.\2.\1/') " is listed in $LIST"
+	        	fi
+        	done
+	done
+exit
+}	
+
+# Senderbase Lookup
+function sblookup {
+	if [[ $( dig txt $BACKADDRESS.query.senderbase.org | grep "6=0") ]] ; then
+        	REPUTATION="Neutral or Better"
+	else
+        	REPUTATION="Poor"
+	fi
+}
 
 # Runs the check against the list of RBLs then prints a result if it is listed
-for LI in ${LISTS} ; do
-     if [[ $(dig  +short ${BACKADDRESS}.${LI}.) =~ 127.0.0.[2-50] ]] ; then
-        echo "This is listed in ${LI}"
-    fi
+function defaultscan {
+	for LIST in ${LISTS} ; do
+	    if [[ $(dig  +short ${BACKADDRESS}.${LIST}.) =~ 127.0.0.[2-50] ]] ; then
+	        echo "Listed in ${LIST}"
+	    fi
+	done
+}
+
+# Begin Output
+function defaultout {
+	echo "+----------------------------------------------------------------------+"
+	echo "      IP Address is: "  $ADDRESS
+	echo "      Reverse DNS (if any) is: " $REVERSE
+#	echo "      Senderbase Reptation is: " $REPUTATION
+	echo "+----------------------------------------------------------------------+"
+	echo " "
+	echo " "
+	echo "Running query now, this may take some time..."
+	echo "If nothing comes up, you're not listed on known blacklists."
+}
+
+# Checks for variables and gives a short help menu just in case
+while getopts ":h" SWITCH; do
+    case $SWITCH in
+        h)
+		echo ""
+	        echo "IP Blocklist checker" >&2
+	        echo ""
+        	echo "Usage: rblscan [ip address] <subnet in CIDR>" >&2
+	        echo ""
+	        exit 1
+	        ;;
+        \?)
+            echo "Invalid option: -$OPTARG" >&2
+            echo "Please use -h for help" >&2
+            exit 1
+	    ;;
+    esac
 done
+
+rangecheck
+#sblookup
+defaultout
+defaultscan
+exit

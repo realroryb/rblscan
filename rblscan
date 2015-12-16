@@ -205,7 +205,6 @@ function defaultout {
 	echo "+----------------------------------------------------------------------+"
 	echo "      IP Address is: "  $ADDRESS
 	echo "      Reverse DNS (if any) is: " $REVERSE
-#	echo "      Senderbase Reptation is: " $REPUTATION
 	echo "+----------------------------------------------------------------------+"
 	echo " "
 	echo " "

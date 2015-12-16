@@ -229,8 +229,8 @@ function rangeoutput {
 	echo ""
 	echo "+----------------------------------------------------------------------+"
 	echo ""
-	echo "     Network scanned is: " $ADDRESS
-	echo "     Subnet size: " $SUBNETCIDR
+	echo "     Range scan started on: " $ADDRESS
+	echo "     Subnet size: /"$SUBNETCIDR
 	echo ""
 	echo "+----------------------------------------------------------------------+"
 	echo ""
@@ -261,7 +261,6 @@ while getopts ":h" SWITCH; do
 done
 
 rangecheck
-#sblookup
 defaultout
 defaultscan
 

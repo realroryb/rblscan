@@ -155,8 +155,9 @@ zombie.dnsbl.sorbs.net
 # Checks if you're scanning a range or not
 function rangecheck {
 	if [[ -n "$SUBNETCIDR" ]] ; then
-	    rangebuild
-	    rangescan 
+		rangebuild
+		rangeoutput
+		rangescan 
 	fi
 }
 
@@ -175,11 +176,15 @@ function rangescan {
 	for BACKRANGEARRA in ${BACKRANGEARRAY} ; do
 		for LIST in ${LISTS} ; do
         		if [[ $(dig  +short ${BACKRANGEARRA}.${LIST}.) =~ 127.0.0.[2-50] ]] ; then
+				echo ""
 				echo $(echo $BACKRANGEARRA | sed -r 's/([0-9]{1,3}).([0-9]{1,3}).([0-9]{1,3}).([0-9]{1,3})/\4.\3.\2.\1/') " is listed in $LIST"
 	        	fi
         	done
 	done
-exit
+	echo ""
+	echo "Scan completed!!!"
+	echo ""
+	exit
 }	
 
 # Senderbase Lookup
@@ -198,21 +203,45 @@ function defaultscan {
 	        echo "Listed in ${LIST}"
 	    fi
 	done
+	echo ""
+	echo "Scan completed!!!"
+	echo ""
 }
 
 # Begin Output
 function defaultout {
+	echo ""
 	echo "+----------------------------------------------------------------------+"
+	echo ""
 	echo "      IP Address is: "  $ADDRESS
 	echo "      Reverse DNS (if any) is: " $REVERSE
+	echo ""
 	echo "+----------------------------------------------------------------------+"
-	echo " "
-	echo " "
+	echo ""
+	echo ""
 	echo "Running query now, this may take some time..."
 	echo "If nothing comes up, you're not listed on known blacklists."
+	echo ""
 }
 
-# Checks for variables and gives a short help menu just in case
+# Range Output
+function rangeoutput {
+	echo ""
+	echo "+----------------------------------------------------------------------+"
+	echo ""
+	echo "     Network scanned is: " $ADDRESS
+	echo "     Subnet size: " $SUBNETCIDR
+	echo ""
+	echo "+----------------------------------------------------------------------+"
+	echo ""
+	echo ""
+	echo "Running scan against this range, this may take some time..."
+	echo ""
+	echo "If nothing comes up, your range is not listed on known blocklists."
+	echo ""
+}
+
+# Help Menu with -h
 while getopts ":h" SWITCH; do
     case $SWITCH in
         h)
@@ -235,4 +264,5 @@ rangecheck
 #sblookup
 defaultout
 defaultscan
+
 exit

@@ -10,6 +10,6 @@ How to use:
 1. git clone https://github.com/rblanchardbell/rblscan
 2. cd rblscan
 3. chmod a+x rblscan
-4. ./rblscan [ip address] <subnet in CIDR>
+4. ./rblscan [ip address] &lt;subnet in CIDR&gt;
 
 Enjoy!

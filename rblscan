@@ -25,7 +25,9 @@ REVERSE=$(dig -x $ADDRESS +short)
 SUBNETCIDR=$2
 
 # Subnet hosts based on CIDR
-if [[ $SUBNETCIDR = 30 ]] ; then
+if [[ $SUBNETCIDR = 31 ]] ; then
+	SUBNETSPAN="2"
+elif [[ $SUBNETCIDR = 30 ]] ; then
 	SUBNETSPAN="4"
 elif [[ $SUBNETCIDR = 29 ]] ; then
 	SUBNETSPAN="8"
@@ -35,8 +37,6 @@ elif [[ $SUBNETCIDR = 27 ]] ; then
         SUBNETSPAN="32"
 elif [[ $SUBNETCIDR = 26 ]] ; then
         SUBNETSPAN="64"
-elif [[ $SUBNETCIDR = 31 ]] ; then
-	SUBNETSPAN="2"
 elif [[ $SUBNETCIDR = 25 ]] ; then
         SUBNETSPAN="128"
 elif [[ $SUBNETCIDR = 24 ]] ; then
@@ -61,6 +61,7 @@ elif [[ -z $SUBNETCIDR ]] ; then
 	:
 else
 	echo "Please supply a valid CIDR"
+	echo "/16 is the largest scannable range"
 	exit
 fi
 

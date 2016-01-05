@@ -188,14 +188,6 @@ function rangescan {
 	exit
 }	
 
-# Senderbase Lookup
-function sblookup {
-	if [[ $( dig txt $BACKADDRESS.query.senderbase.org | grep "6=0") ]] ; then
-        	REPUTATION="Neutral or Better"
-	else
-        	REPUTATION="Poor"
-	fi
-}
 
 # Runs the check against the list of RBLs then prints a result if it is listed
 function defaultscan {

@@ -6,9 +6,7 @@
 ADDRESS=$1
 
 # Verifies address is correct format and length
-if [[ $ADDRESS =~ ([0-9]{1,3})\.([0-9]{1,3})\.([0-9]{1,3})\.([0-9]{1,3}) ]] ; then
-	:
-else
+if ! [[ $ADDRESS =~ (^([0-9]{1,3}\.){3}[0-9]{1,3}$) ]] ; then
 	echo ""
 	echo "Please supply a valid address"
         echo ""
@@ -19,7 +17,6 @@ else
 fi
 
 # Creates needed variables
-
 BACKADDRESS=$(echo $ADDRESS | sed -r 's/([0-9]{1,3}).([0-9]{1,3}).([0-9]{1,3}).([0-9]{1,3})/\4.\3.\2.\1/')
 REVERSE=$(dig -x $ADDRESS +short)
 SUBNETCIDR=$2

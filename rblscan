@@ -68,7 +68,6 @@ fi
 # List of RBLs
 LISTS="
 b.barracudacentral.org
-bb.barracudacentral.org
 bl.deadbeef.com
 bl.emailbasura.org
 bl.spamcannibal.org
